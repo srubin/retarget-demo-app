@@ -1,0 +1,10 @@
+{
+  "name": "retarget-demo-app",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "~3.0.3",
+    "jquery": "~1.11.0",
+    "react": "~0.10.0"
+  },
+  "devDependencies": {}
+}
