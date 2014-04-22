@@ -2,9 +2,13 @@
   "name": "retarget-demo-app",
   "private": true,
   "dependencies": {
-    "bootstrap": "~3.0.3",
+    "bootstrap": "~3.1.1",
     "jquery": "~1.11.0",
-    "react": "~0.10.0"
+    "react": "~0.10.0",
+    "soundmanager": "*"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "resolutions": {
+    "bootstrap": "~3.1.1"
+  }
 }

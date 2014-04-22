@@ -50,7 +50,10 @@ var RetargetSettings = React.createClass({
         </div>;
     },
     getInitialState: function() {
-        return {startAtStart: true, endAtEnd: true};
+        return {
+            startAtStart: this.props.startAtStart,
+            endAtEnd: this.props.endAtEnd
+        };
     },
     handleChange: function(field, event) {
         var state = {};
@@ -60,11 +63,22 @@ var RetargetSettings = React.createClass({
     }
 });
 
-var RetargetResult = React.createClass({
+var RetargetUploadForm = React.createClass({
     render: function() {
-        return <ul className="player">
-        <li><a href={this.props.trackUrl}>Retargeted result</a></li>
-        </ul>;
+        return  <div className="fileinput fileinput-new input-group" data-provides="fileinput">
+            <div className="form-control" data-trigger="fileinput">
+                <i className="glyphicon glyphicon-file fileinput-exists"></i>
+                <span className="fileinput-filename"></span>
+            </div>
+            <span className="input-group-addon btn btn-default btn-file">
+                <span className="fileinput-new">Select music track</span>
+                <span className="fileinput-exists">Change</span>
+                <input type="file" name="song" />
+            </span>
+            <a href="#" className="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">
+                Remove
+            </a>
+        </div>;
     }
 });
 
@@ -76,15 +90,22 @@ var Retarget = React.createClass({
         });
 
         return <div>
-        <div className="col-lg-4"><RetargetTime onChange={this.updateTime} seconds={90} /></div>
-        <div className="col-lg-4"><RetargetSettings onChange={this.updateSettings} /></div>
-        <div className="col-lg-4">
+        <div className="col-lg-6">
+            <div className="well">
+                <p className="lead">Music</p>
+                <RetargetUploadForm />
+                <input type="text" value={this.state.trackName} onChange={this.updateTrackName} />
+            </div>
+            <RetargetTime onChange={this.updateTime} seconds={90} />
+            <RetargetSettings onChange={this.updateSettings} startAtStart={true} endAtEnd={true} />
+        </div>
+        <div className="col-lg-6">
             <div>
-                <button onClick={this.retarget} className="btn btn-success">Retarget</button>
+                <button onClick={this.retarget} className="btn btn-success btn-block btn-lg">Retarget</button>
                 <span> {this.state.status}</span>
             </div>
             <div>
-                <ul className="player">
+                <ul className="playlist">
                 {items}
                 </ul>
             </div>
@@ -95,8 +116,14 @@ var Retarget = React.createClass({
         return {
             status: "",
             results: [],
-            seconds: 90
+            seconds: 90,
+            trackName: "Track name",
+            startAtStart: true,
+            endAtEnd: true
         };
+    },
+    updateTrackName: function(event) {
+        this.setState({trackName: event.target.value});
     },
     updateTime: function(secs) {
         this.setState({seconds: secs});
@@ -104,12 +131,24 @@ var Retarget = React.createClass({
     updateSettings: function(settings) {
         this.setState(settings);
     },
+    getName: function() {
+        var start = 'freeStart';
+        var end = 'freeEnd';
+        if (this.state.startAtStart) {
+            start = 'fixStart';
+        }
+        if (this.state.endAtEnd) {
+            end = 'fixEnd';
+        }
+        return '' + this.state.trackName + ' (' +
+            this.state.seconds + ', ' + start + ', ' + end + ')';
+    },
     retarget: function() {
         this.setState({status: "Computing..."});
         var results = this.state.results;
         results.push({
-            text: 'Result - ' + this.state.seconds,
-            url: '#',
+            text: this.getName(),
+            url: 'test.mp3',
             id: '' + Math.random()
         });
         this.setState({results: results});

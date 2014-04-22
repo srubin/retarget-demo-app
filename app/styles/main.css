@@ -5,6 +5,10 @@
     padding: 0.2em 0;
 }
 
+.title {
+    color: #3c008b;
+}
+
 /* Space out content a bit */
 body {
     padding-top: 20px;
