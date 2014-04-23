@@ -1,7 +1,7 @@
 /** @jsx React.DOM */
 var RetargetTime = React.createClass({
     render: function() {
-        return <form className="well"><p className="lead">Target duration</p>
+        return <div className="well"><p className="lead">Target duration</p>
         <input type="number" placeholder="minutes" size="7"
         ref="minutes"
         value={parseInt(this.state.seconds / 60, 10)}
@@ -10,7 +10,7 @@ var RetargetTime = React.createClass({
         ref="seconds"
         value={parseInt(this.state.seconds % 60, 10)}
         onChange={this.onChange} />
-        </form>;
+        </div>;
     },
     getInitialState: function() {
         return {seconds:parseInt(this.props.seconds, 10)};

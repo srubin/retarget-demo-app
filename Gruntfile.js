@@ -16,6 +16,7 @@ module.exports = function (grunt) {
     require('time-grunt')(grunt);
 
     grunt.loadNpmTasks('grunt-react');
+    grunt.loadNpmTasks('grunt-connect-proxy');
 
     // Configurable paths
     var config = {
@@ -76,14 +77,33 @@ module.exports = function (grunt) {
                 // Change this to '0.0.0.0' to access the server from outside
                 hostname: 'localhost'
             },
+            proxies: [
+                {
+                    context: '/retarget-service',
+                    host: 'localhost',
+                    port: 8080
+                }
+            ],
             livereload: {
                 options: {
-                    middleware: function(connect) {
-                        return [
-                            connect.static('.tmp'),
-                            connect().use('/bower_components', connect.static('./bower_components')),
-                            connect.static(config.app)
-                        ];
+                    middleware: function(connect, options) {
+                        var middlewares = [];
+                           
+                        if (!Array.isArray(options.base)) {
+                            options.base = [options.base];
+                        }
+
+                        middlewares.push(require('grunt-connect-proxy/lib/utils').proxyRequest);
+
+                        options.base.forEach(function(base) {
+                            middlewares.push(connect.static(base));
+                        });
+
+                        middlewares.push(connect.static('.tmp'));
+                        middlewares.push(connect().use('/bower_components', connect.static('./bower_components')));
+                        middlewares.push(connect.static(config.app));
+
+                        return middlewares;
                     }
                 }
             },
@@ -371,6 +391,7 @@ module.exports = function (grunt) {
             'clean:server',
             'concurrent:server',
             'autoprefixer',
+            'configureProxies:server',
             'connect:livereload',
             'watch'
         ]);
