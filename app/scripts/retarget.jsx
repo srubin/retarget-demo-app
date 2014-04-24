@@ -65,7 +65,8 @@ var RetargetSettings = React.createClass({
 
 var RetargetUploadForm = React.createClass({
     render: function() {
-        return  <div className="fileinput fileinput-new input-group" data-provides="fileinput">
+        return  <form action="retarget-service/uploadTrack" id="uploadForm" method="POST" enctype="multipart/form-data">
+        <div className="fileinput fileinput-new input-group" data-provides="fileinput">
             <div className="form-control" data-trigger="fileinput">
                 <i className="glyphicon glyphicon-file fileinput-exists"></i>
                 <span className="fileinput-filename"></span>
@@ -78,7 +79,7 @@ var RetargetUploadForm = React.createClass({
             <a href="#" className="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">
                 Remove
             </a>
-        </div>;
+        </div></form>;
     }
 });
 
@@ -119,7 +120,9 @@ var Retarget = React.createClass({
             seconds: 90,
             trackName: "Track name",
             startAtStart: true,
-            endAtEnd: true
+            endAtEnd: true,
+            uploadedTrack: false,
+            trackPath: null
         };
     },
     updateTrackName: function(event) {
@@ -144,6 +147,8 @@ var Retarget = React.createClass({
             this.state.seconds + ', ' + start + ', ' + end + ')';
     },
     retarget: function() {
+        if (this.state.uploadedTrack)
+
         this.setState({status: "Computing..."});
         var results = this.state.results;
         results.push({
