@@ -65,7 +65,7 @@ var RetargetSettings = React.createClass({
 
 var RetargetUploadForm = React.createClass({
     render: function() {
-        return  <form action="retarget-service/uploadTrack" id="uploadForm" method="POST" enctype="multipart/form-data">
+        return  <form id="uploadForm" method="POST" enctype="multipart/form-data">
         <div className="fileinput fileinput-new input-group" data-provides="fileinput">
             <div className="form-control" data-trigger="fileinput">
                 <i className="glyphicon glyphicon-file fileinput-exists"></i>
@@ -74,12 +74,15 @@ var RetargetUploadForm = React.createClass({
             <span className="input-group-addon btn btn-default btn-file">
                 <span className="fileinput-new">Select music track</span>
                 <span className="fileinput-exists">Change</span>
-                <input type="file" name="song" />
+                <input type="file" name="song" onChange={this.onChange} />
             </span>
             <a href="#" className="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">
                 Remove
             </a>
         </div></form>;
+    },
+    onChange: function() {
+        this.props.onChange();
     }
 });
 
@@ -94,7 +97,7 @@ var Retarget = React.createClass({
         <div className="col-lg-6">
             <div className="well">
                 <p className="lead">Music</p>
-                <RetargetUploadForm />
+                <RetargetUploadForm onChange={this.dirtyTrack} />
                 <input type="text" value={this.state.trackName} onChange={this.updateTrackName} />
             </div>
             <RetargetTime onChange={this.updateTime} seconds={90} />
@@ -134,6 +137,9 @@ var Retarget = React.createClass({
     updateSettings: function(settings) {
         this.setState(settings);
     },
+    dirtyTrack: function() {
+        this.setState({uploadedTrack: false});
+    },
     getName: function() {
         var start = 'freeStart';
         var end = 'freeEnd';
@@ -147,16 +153,88 @@ var Retarget = React.createClass({
             this.state.seconds + ', ' + start + ', ' + end + ')';
     },
     retarget: function() {
-        if (this.state.uploadedTrack)
+        var opts = {
+            lines: 9, // The number of lines to draw
+            length: 0, // The length of each line
+            width: 16, // The line thickness
+            radius: 36, // The radius of the inner circle
+            corners: 1, // Corner roundness (0..1)
+            rotate: 0, // The rotation offset
+            direction: 1, // 1: clockwise, -1: counterclockwise
+            color: '#000', // #rgb or #rrggbb or array of colors
+            speed: 1.2, // Rounds per second
+            trail: 45, // Afterglow percentage
+            shadow: false, // Whether to render a shadow
+            hwaccel: false, // Whether to use hardware acceleration
+            className: 'spinner', // The CSS class to assign to the spinner
+            zIndex: 2e9, // The z-index (defaults to 2000000000)
+            top: '50%', // Top position relative to parent
+            left: '50%' // Left position relative to parent
+        };
+        var spinner = new Spinner(opts).spin($('body')[0]);
 
-        this.setState({status: "Computing..."});
-        var results = this.state.results;
-        results.push({
-            text: this.getName(),
-            url: 'test.mp3',
-            id: '' + Math.random()
-        });
-        this.setState({results: results});
+        var _this = this;
+
+        var retargetFn = function() {
+            _this.setState({
+                status: "Retargeting track (this can take several minutes if it's the first time retargeting a track)"}
+            );
+            var start = "no";
+            var end = "no";
+            if (_this.state.startAtStart) {
+                start = "start";
+            }
+            if (_this.state.endAtEnd) {
+                end = "end";
+            }
+            var url = "retarget-service/retarget/" +
+                _this.state.trackPath + '/' + 
+                _this.state.seconds + '/' +
+                start + '/' + end;
+
+            $.ajax({
+                type: "GET",
+                url: url,
+                success: function(data) {
+                    var results = _this.state.results;
+                    results.push({
+                        text: _this.getName(),
+                        url: data,
+                        id: '' + Math.random()
+                    });
+                    _this.setState({results: results});
+                    spinner.stop();
+                    _this.setState({status: ""});
+                }
+            });
+        };
+
+        if (!this.state.uploadedTrack) {
+            $("#uploadForm").submit(function(event) {
+                var formData = new FormData($('#uploadForm')[0]);
+                _this.setState({status: "Uploading track"});
+                $.ajax({
+                       type: "POST",
+                       url: "retarget-service/uploadTrack",
+                       data: formData,
+                       cache: false,
+                       contentType: false,
+                       processData: false,
+                       success: function(data) {
+                            _this.setState({
+                                uploadedTrack: true,
+                                trackName: data.title,
+                                trackPath: data.filename
+                            });
+                            retargetFn();
+                       }
+                });
+                event.preventDefault();
+            }).submit();
+        } else {
+            retargetFn();
+        }
+
     }
 });
 

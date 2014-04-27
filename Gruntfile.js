@@ -15,9 +15,6 @@ module.exports = function (grunt) {
     // Time how long tasks take. Can help when optimizing build times
     require('time-grunt')(grunt);
 
-    grunt.loadNpmTasks('grunt-react');
-    grunt.loadNpmTasks('grunt-connect-proxy');
-
     // Configurable paths
     var config = {
         app: 'app',
@@ -80,6 +77,11 @@ module.exports = function (grunt) {
             proxies: [
                 {
                     context: '/retarget-service',
+                    host: 'localhost',
+                    port: 8080
+                },
+                {
+                    context: '/static',
                     host: 'localhost',
                     port: 8080
                 }
