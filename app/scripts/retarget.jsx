@@ -45,7 +45,7 @@ var RetargetSettings = React.createClass({
             checked={this.state.endAtEnd}
             onChange={this.handleChange.bind(this, 'endAtEnd')}
         > 
-            <label htmlFor="endAtEnd">&nbsp;End at end of music</label>
+            <label htmlFor="endAtEnd">&nbsp;End at end of music (roughly)</label>
         </input>
         </div>;
     },
@@ -65,7 +65,7 @@ var RetargetSettings = React.createClass({
 
 var RetargetUploadForm = React.createClass({
     render: function() {
-        return  <form id="uploadForm" method="POST" enctype="multipart/form-data">
+        return  <form id="uploadForm" method="POST" encType="multipart/form-data">
         <div className="fileinput fileinput-new input-group" data-provides="fileinput">
             <div className="form-control" data-trigger="fileinput">
                 <i className="glyphicon glyphicon-file fileinput-exists"></i>
@@ -74,20 +74,21 @@ var RetargetUploadForm = React.createClass({
             <span className="input-group-addon btn btn-default btn-file">
                 <span className="fileinput-new">Select music track</span>
                 <span className="fileinput-exists">Change</span>
-                <input type="file" name="song" onChange={this.onChange} />
+                <input type="file" name="song" />
             </span>
             <a href="#" className="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">
                 Remove
             </a>
         </div></form>;
-    },
-    onChange: function() {
-        this.props.onChange();
     }
 });
 
 var Retarget = React.createClass({
     render: function() {
+        var status = '';
+        if (this.state.status !== '') {
+            status = <div className="alert alert-warning"> {this.state.status}</div>;
+        }
         var items = {};
         this.state.results.forEach(function(result) {
             items['result-' + result.id] = <li><a href={result.url}>{result.text}</a></li>;
@@ -104,15 +105,26 @@ var Retarget = React.createClass({
             <RetargetSettings onChange={this.updateSettings} startAtStart={true} endAtEnd={true} />
         </div>
         <div className="col-lg-6">
-            <div>
-                <button onClick={this.retarget} className="btn btn-success btn-block btn-lg">Retarget</button>
-                <span> {this.state.status}</span>
+            <div className="row">
+                <div className="col-lg-6">
+                    <div>
+                        <button onClick={this.retarget} className="btn btn-success btn-block btn-lg">Retarget</button>
+                    </div>
+                </div>
+                <div className="col-lg-6">
+                    <div>
+                        <button onClick={this.clearResults} className="btn btn-block btn-lg">Clear all results</button>
+                    </div>
+                </div>
             </div>
+                    
             <div>
+                {status}
                 <ul className="playlist">
                 {items}
                 </ul>
             </div>
+
         </div>
         </div>;
     },
@@ -125,7 +137,8 @@ var Retarget = React.createClass({
             startAtStart: true,
             endAtEnd: true,
             uploadedTrack: false,
-            trackPath: null
+            trackPath: null,
+            fileinputFilename: null
         };
     },
     updateTrackName: function(event) {
@@ -136,9 +149,6 @@ var Retarget = React.createClass({
     },
     updateSettings: function(settings) {
         this.setState(settings);
-    },
-    dirtyTrack: function() {
-        this.setState({uploadedTrack: false});
     },
     getName: function() {
         var start = 'freeStart';
@@ -151,6 +161,81 @@ var Retarget = React.createClass({
         }
         return '' + this.state.trackName + ' (' +
             this.state.seconds + ', ' + start + ', ' + end + ')';
+    },
+    componentDidMount: function() {
+        var _this = this;
+
+        $("#uploadForm").submit(function(event) {
+            var formData = new FormData($('#uploadForm')[0]);
+            _this.setState({status: "Uploading track"});
+            $.ajax({
+                type: "POST",
+                url: "retarget-service/uploadTrack",
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function(data) {
+                    _this.setState({
+                        uploadedTrack: true,
+                        trackName: data.title,
+                        trackPath: data.filename
+                    });
+                    _this._retargetFn();
+                },
+                error: function() {
+                    _this.setState({
+                        status: "Could not upload track. Select an mp3 to upload"
+                    });
+                    _this.state.spinner.stop()
+                }
+            });
+            event.preventDefault();
+        });
+    },
+    _retargetFn: function() {
+        this.setState({
+            status: "Retargeting track (this can take several minutes if it's the first time retargeting this track)"}
+        );
+        var start = "no";
+        var end = "no";
+        if (this.state.startAtStart) {
+            start = "start";
+        }
+        if (this.state.endAtEnd) {
+            end = "end";
+        }
+        var url = "retarget-service/retarget/" +
+            this.state.trackPath + '/' + 
+            this.state.seconds + '/' +
+            start + '/' + end;
+
+        var _this = this;
+
+        $.ajax({
+            type: "GET",
+            url: url,
+            success: function(data) {
+                var results = _this.state.results;
+                results.push({
+                    text: _this.getName(),
+                    url: data,
+                    id: '' + Math.random()
+                });
+                _this.setState({results: results});
+                _this.state.spinner.stop();
+                _this.setState({status: ""});
+            },
+            error: function () {
+                _this.setState({
+                    status: "Could not retarget track."
+                });
+                _this.state.spinner.stop();
+            }
+        });
+    },
+    clearResults: function() {
+        this.setState({results: []});
     },
     retarget: function() {
         var opts = {
@@ -171,68 +256,27 @@ var Retarget = React.createClass({
             top: '50%', // Top position relative to parent
             left: '50%' // Left position relative to parent
         };
-        var spinner = new Spinner(opts).spin($('body')[0]);
+        this.setState({spinner: new Spinner(opts).spin($('body')[0])});
 
         var _this = this;
 
-        var retargetFn = function() {
-            _this.setState({
-                status: "Retargeting track (this can take several minutes if it's the first time retargeting a track)"}
-            );
-            var start = "no";
-            var end = "no";
-            if (_this.state.startAtStart) {
-                start = "start";
-            }
-            if (_this.state.endAtEnd) {
-                end = "end";
-            }
-            var url = "retarget-service/retarget/" +
-                _this.state.trackPath + '/' + 
-                _this.state.seconds + '/' +
-                start + '/' + end;
-
-            $.ajax({
-                type: "GET",
-                url: url,
-                success: function(data) {
-                    var results = _this.state.results;
-                    results.push({
-                        text: _this.getName(),
-                        url: data,
-                        id: '' + Math.random()
-                    });
-                    _this.setState({results: results});
-                    spinner.stop();
-                    _this.setState({status: ""});
-                }
+        var fifn = $(".fileinput-filename").text();
+        var upload = false;
+        if (fifn !== this.state.fileinputFilename) {
+            console.log("Must upload new file");
+            this.setState({
+                fileinputFilename: fifn,
+                uploadedTrack: false,
+                trackPath: null
             });
-        };
+            console.log(this.state);
+            var upload = true;
+        }
 
-        if (!this.state.uploadedTrack) {
-            $("#uploadForm").submit(function(event) {
-                var formData = new FormData($('#uploadForm')[0]);
-                _this.setState({status: "Uploading track"});
-                $.ajax({
-                       type: "POST",
-                       url: "retarget-service/uploadTrack",
-                       data: formData,
-                       cache: false,
-                       contentType: false,
-                       processData: false,
-                       success: function(data) {
-                            _this.setState({
-                                uploadedTrack: true,
-                                trackName: data.title,
-                                trackPath: data.filename
-                            });
-                            retargetFn();
-                       }
-                });
-                event.preventDefault();
-            }).submit();
+        if (upload) {
+            $("#uploadForm").submit();
         } else {
-            retargetFn();
+            this._retargetFn();
         }
 
     }
