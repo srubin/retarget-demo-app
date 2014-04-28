@@ -36,8 +36,10 @@ module.exports = function (grunt) {
                 message: 'Built %sourceName% from commit %sourceCommit% on branch %sourceBranch%'
             },
             github: {
-                remote: 'git@github.com:srubin/retarget-demo-app.git',
-                branch: 'production'
+                options: {
+                    remote: 'git@github.com:srubin/retarget-demo-app.git',
+                    branch: 'production'
+                }
             }
         },
 
@@ -416,6 +418,10 @@ module.exports = function (grunt) {
     grunt.registerTask('server', function (target) {
         grunt.log.warn('The `server` task has been deprecated. Use `grunt serve` to start a server.');
         grunt.task.run([target ? ('serve:' + target) : 'serve']);
+    });
+
+    grunt.registerTask('deploy', function () {
+        grunt.task.run(['build', 'buildcontrol:github']);
     });
 
     grunt.registerTask('test', function (target) {
