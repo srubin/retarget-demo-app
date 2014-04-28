@@ -27,6 +27,20 @@ module.exports = function (grunt) {
         // Project settings
         config: config,
 
+        // build control
+        buildcontrol: {
+            options: {
+                dir: 'dist',
+                commit: true,
+                push: true,
+                message: 'Built %sourceName% from commit %sourceCommit% on branch %sourceBranch%'
+            },
+            github: {
+                remote: 'git@github.com:srubin/retarget-demo-app.git',
+                branch: 'production'
+            }
+        },
+
         // Watches files for changes and runs tasks based on the changed files
         watch: {
             bower: {
