@@ -150,7 +150,7 @@ var Retarget = React.createClass({
     updateSettings: function(settings) {
         this.setState(settings);
     },
-    getName: function() {
+    getName: function(cost, transitions) {
         var start = 'freeStart';
         var end = 'freeEnd';
         if (this.state.startAtStart) {
@@ -159,8 +159,14 @@ var Retarget = React.createClass({
         if (this.state.endAtEnd) {
             end = 'fixEnd';
         }
-        return '' + this.state.trackName + ' (' +
+
+        var name = '' + this.state.trackName + ' (' +
             this.state.seconds + ', ' + start + ', ' + end + ')';
+        name += ' Cost: ' + cost + '; Transitions: ';
+        transitions.forEach(function (t) {
+            name += t + '; '
+        });
+        return name;
     },
     componentDidMount: function() {
         var _this = this;
@@ -218,8 +224,8 @@ var Retarget = React.createClass({
             success: function(data) {
                 var results = _this.state.results;
                 results.push({
-                    text: _this.getName(),
-                    url: data,
+                    text: _this.getName(data.cost, data.transitions),
+                    url: data.url,
                     id: '' + Math.random()
                 });
                 _this.setState({results: results});
