@@ -161,7 +161,7 @@ var Retarget = React.createClass({
         }
 
         var name = '' + this.state.trackName + ' (' +
-            this.state.seconds + ', ' + start + ', ' + end + ')';
+            this.state.seconds + ', ' + start + ', ' + end + ')<br />';
         name += 'Transitions: ';
         transitions.forEach(function (t) {
             name += t[0] + 'sec, c: ' + t[1] + '; ';
