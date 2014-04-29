@@ -175,7 +175,7 @@ var Retarget = React.createClass({
             name += t[0] + 'sec, c: ' + t[1] + '; ';
         });
         return name;
-    }
+    },
     componentDidMount: function() {
         var _this = this;
 
