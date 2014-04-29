@@ -91,7 +91,12 @@ var Retarget = React.createClass({
         }
         var items = {};
         this.state.results.forEach(function(result) {
-            items['result-' + result.id] = <li><a href={result.url}>{result.text}</a></li>;
+            items['result-' + result.id] = <li>
+                <a href={result.url}>{result.text}
+                <br />
+                {result.details}
+                </a>
+                </li>;
         });
 
         return <div>
@@ -150,7 +155,7 @@ var Retarget = React.createClass({
     updateSettings: function(settings) {
         this.setState(settings);
     },
-    getName: function(transitions) {
+    getName: function() {
         var start = 'freeStart';
         var end = 'freeEnd';
         if (this.state.startAtStart) {
@@ -161,13 +166,16 @@ var Retarget = React.createClass({
         }
 
         var name = '' + this.state.trackName + ' (' +
-            this.state.seconds + ', ' + start + ', ' + end + ')<br />';
-        name += 'Transitions: ';
+            this.state.seconds + ', ' + start + ', ' + end + ')';
+        return name;
+    },
+    getDetails: function(transitions) {
+        var name = 'Transitions: ';
         transitions.forEach(function (t) {
             name += t[0] + 'sec, c: ' + t[1] + '; ';
         });
         return name;
-    },
+    }
     componentDidMount: function() {
         var _this = this;
 
@@ -224,7 +232,8 @@ var Retarget = React.createClass({
             success: function(data) {
                 var results = _this.state.results;
                 results.push({
-                    text: _this.getName(data.transitions),
+                    text: _this.getName(),
+                    details: _this.getDetails(data.transitions),
                     url: data.url,
                     id: '' + Math.random()
                 });
