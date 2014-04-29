@@ -170,7 +170,7 @@ var Retarget = React.createClass({
             _this.setState({status: "Uploading track"});
             $.ajax({
                 type: "POST",
-                url: "retarget-service/uploadTrack",
+                url: "/retarget-service/uploadTrack",
                 data: formData,
                 cache: false,
                 contentType: false,
@@ -205,7 +205,7 @@ var Retarget = React.createClass({
         if (this.state.endAtEnd) {
             end = "end";
         }
-        var url = "retarget-service/retarget/" +
+        var url = "/retarget-service/retarget/" +
             this.state.trackPath + '/' + 
             this.state.seconds + '/' +
             start + '/' + end;
