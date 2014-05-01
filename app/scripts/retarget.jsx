@@ -1,4 +1,5 @@
 /** @jsx React.DOM */
+var blah = undefined;
 var RetargetTime = React.createClass({
     render: function() {
         return <div className="well"><p className="lead">Target duration</p>
