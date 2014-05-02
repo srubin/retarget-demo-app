@@ -65,27 +65,43 @@ var RetargetSettings = React.createClass({
 
 var RetargetUploadForm = React.createClass({
     render: function() {
+        var stockTrackOptions = [];
+        this.props.stockTracks.forEach(function (stockTrack) {
+            stockTrackOptions.push(<option value={stockTrack.trackPath}>{stockTrack.trackName}</option>);
+        });
         return  <form id="uploadForm" method="POST" encType="multipart/form-data">
         <div className="row">
-            <div>
-            <select ref="trackSelect" data-placeholder="Choose a pre-analyzed track..." className="chosen-select">
-                <option value=''></option>
-                <option value='testtrack'>Test track</option>
-            </select>
+            <div className="col-lg-5">
+                <input name="musicSource" id="musicSourceStock" checked value="stock" type="radio" />
+                <label htmlFor="musicSourceStock">&nbsp;Pre-analyzed music:</label>
             </div>
-            <div className="fileinput fileinput-new input-group" data-provides="fileinput">
-                <div className="form-control" data-trigger="fileinput">
-                    <i className="glyphicon glyphicon-file fileinput-exists"></i>
-                    <span className="fileinput-filename"></span>
+            <div className="col-lg-7">
+                <select ref="trackSelect" data-placeholder="Choose music..." className="chosen-select">
+                    <option value=''></option>
+                    {stockTrackOptions}
+                </select>
+            </div>
+        </div>
+        <div className="row">
+            <div className="col-lg-5">
+                <input name="musicSource" id="musicSourceUpload" value="stock" type="radio" />
+                <label htmlFor="musicSourceUpload">&nbsp;Or, upload an mp3:</label>
+            </div>
+            <div className="col-lg-7">
+                <div className="fileinput fileinput-new input-group" data-provides="fileinput">
+                    <div className="form-control" data-trigger="fileinput">
+                        <i className="glyphicon glyphicon-file fileinput-exists"></i>
+                        <span className="fileinput-filename"></span>
+                    </div>
+                    <span className="input-group-addon btn btn-default btn-file">
+                        <span className="fileinput-new">Select music track</span>
+                        <span className="fileinput-exists">Change</span>
+                        <input type="file" name="song" />
+                    </span>
+                    <a href="#" className="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">
+                        Remove
+                    </a>
                 </div>
-                <span className="input-group-addon btn btn-default btn-file">
-                    <span className="fileinput-new">Select music track</span>
-                    <span className="fileinput-exists">Change</span>
-                    <input type="file" name="song" />
-                </span>
-                <a href="#" className="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">
-                    Remove
-                </a>
             </div>
         </div>
         </form>;
@@ -114,9 +130,11 @@ var Retarget = React.createClass({
         return <div>
         <div className="col-lg-6">
             <div className="well">
-                <p className="lead">Music</p>
-                <RetargetUploadForm onChange={this.dirtyTrack} />
-                <input type="text" value={this.state.trackName} onChange={this.updateTrackName} />
+                <p className="lead">Select music</p>
+                <RetargetUploadForm onChange={this.dirtyTrack} stockTracks={this.state.stockTracks} />
+                <p className="lead">Music details</p>
+                <p><strong>Track name:</strong> <input type="text" value={this.state.trackName} onChange={this.updateTrackName} /></p>
+                <p><strong>Track duration:</strong> {this.state.trackDuration}</p>
             </div>
             <RetargetTime onChange={this.updateTime} seconds={90} />
             <RetargetSettings onChange={this.updateSettings} startAtStart={true} endAtEnd={true} />
@@ -151,11 +169,13 @@ var Retarget = React.createClass({
             results: [],
             seconds: 90,
             trackName: "Track name",
+            trackDuration: undefined,
             startAtStart: true,
             endAtEnd: true,
             uploadedTrack: false,
             trackPath: null,
-            fileinputFilename: null
+            fileinputFilename: null,
+            stockTracks: stockTracks
         };
     },
     updateTrackName: function(event) {

@@ -401,7 +401,7 @@ module.exports = function (grunt) {
         // build chosen... I guess
         subgrunt: {
             chosen: {
-                "app/bower_components/chosen": "build"
+                "bower_components/chosen": "build"
             }
         },
     });
