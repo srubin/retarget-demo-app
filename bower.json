@@ -8,5 +8,7 @@
     "soundmanager": "*",
     "spin.js": "~2.0.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "chosen": "~1.1.0"
+  }
 }
