@@ -1,5 +1,4 @@
 /** @jsx React.DOM */
-var blah = undefined;
 var RetargetTime = React.createClass({
     render: function() {
         return <div className="well"><p className="lead">Target duration</p>
@@ -67,20 +66,32 @@ var RetargetSettings = React.createClass({
 var RetargetUploadForm = React.createClass({
     render: function() {
         return  <form id="uploadForm" method="POST" encType="multipart/form-data">
-        <div className="fileinput fileinput-new input-group" data-provides="fileinput">
-            <div className="form-control" data-trigger="fileinput">
-                <i className="glyphicon glyphicon-file fileinput-exists"></i>
-                <span className="fileinput-filename"></span>
+        <div className="row">
+            <div>
+            <select ref="trackSelect" data-placeholder="Choose a pre-analyzed track..." className="chosen-select">
+                <option value=''></option>
+                <option value='testtrack'>Test track</option>
+            </select>
             </div>
-            <span className="input-group-addon btn btn-default btn-file">
-                <span className="fileinput-new">Select music track</span>
-                <span className="fileinput-exists">Change</span>
-                <input type="file" name="song" />
-            </span>
-            <a href="#" className="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">
-                Remove
-            </a>
-        </div></form>;
+            <div className="fileinput fileinput-new input-group" data-provides="fileinput">
+                <div className="form-control" data-trigger="fileinput">
+                    <i className="glyphicon glyphicon-file fileinput-exists"></i>
+                    <span className="fileinput-filename"></span>
+                </div>
+                <span className="input-group-addon btn btn-default btn-file">
+                    <span className="fileinput-new">Select music track</span>
+                    <span className="fileinput-exists">Change</span>
+                    <input type="file" name="song" />
+                </span>
+                <a href="#" className="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">
+                    Remove
+                </a>
+            </div>
+        </div>
+        </form>;
+    },
+    componentDidMount: function() {
+        $(this.refs.trackSelect.getDOMNode()).chosen();
     }
 });
 

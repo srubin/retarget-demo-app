@@ -396,7 +396,14 @@ module.exports = function (grunt) {
                 'imagemin',
                 'svgmin'
             ]
-        }
+        },
+
+        // build chosen... I guess
+        subgrunt: {
+            chosen: {
+                "app/bower_components/chosen": "build"
+            }
+        },
     });
 
 
@@ -441,6 +448,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('build', [
         'clean:dist',
+        'subgrunt:chosen',
         'useminPrepare',
         'concurrent:dist',
         'autoprefixer',
