@@ -1,1 +1,1 @@
-console.log "'Allo from CoffeeScript!"
+# this is the main script file... except I'm not using it

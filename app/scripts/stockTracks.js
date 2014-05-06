@@ -1,7 +1,7 @@
 var stockTracks = [
     {
         trackName: "Painted Sun in Abstract",
-        trackPath: "static/stock/PaintedSunInAbstract.wav",
+        trackPath: "PaintedSunInAbstract.wav",
         trackDuration: 209.0
     }
 ];

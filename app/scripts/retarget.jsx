@@ -25,7 +25,6 @@ var RetargetTime = React.createClass({
             seconds = 0;
         }
         var totalSeconds = 60 * minutes + seconds;
-        console.log("total seconds", totalSeconds);
         this.setState({seconds: totalSeconds});
         this.props.onChange(totalSeconds);
     }
@@ -65,18 +64,20 @@ var RetargetSettings = React.createClass({
 
 var RetargetUploadForm = React.createClass({
     render: function() {
-        var stockTrackOptions = [];
+        var stockTrackOptions = {};
         this.props.stockTracks.forEach(function (stockTrack) {
-            stockTrackOptions.push(<option value={stockTrack.trackPath}>{stockTrack.trackName}</option>);
+            stockTrackOptions[stockTrack.trackName] = <option value={stockTrack.trackPath}>{stockTrack.trackName}</option>;
         });
+        var stockChecked = (this.state.musicSource == 'stock');
+        var uploadChecked = (this.state.musicSource == 'upload');
         return  <form id="uploadForm" method="POST" encType="multipart/form-data">
         <div className="row">
             <div className="col-lg-5">
-                <input name="musicSource" id="musicSourceStock" checked value="stock" type="radio" />
+                <input name="musicSource" id="musicSourceStock" value="stock" type="radio" checked={stockChecked} onChange={this.handleChange} />
                 <label htmlFor="musicSourceStock">&nbsp;Pre-analyzed music:</label>
             </div>
             <div className="col-lg-7">
-                <select ref="trackSelect" data-placeholder="Choose music..." className="chosen-select">
+                <select ref="trackSelect" data-placeholder="Choose music..." className="chosen-select" onChange={this.handleChange}>
                     <option value=''></option>
                     {stockTrackOptions}
                 </select>
@@ -84,7 +85,7 @@ var RetargetUploadForm = React.createClass({
         </div>
         <div className="row">
             <div className="col-lg-5">
-                <input name="musicSource" id="musicSourceUpload" value="stock" type="radio" />
+                <input name="musicSource" id="musicSourceUpload" value="upload" type="radio" checked={uploadChecked} onChange={this.handleChange} />
                 <label htmlFor="musicSourceUpload">&nbsp;Or, upload an mp3:</label>
             </div>
             <div className="col-lg-7">
@@ -106,8 +107,44 @@ var RetargetUploadForm = React.createClass({
         </div>
         </form>;
     },
+    getInitialState: function() {
+        return {
+            musicSource: this.props.musicSource,
+            trackName: this.props.trackName,
+            trackPath: undefined,
+            trackDuration: undefined
+        };
+    },
+    handleChange: function() {
+        var trackName = this.state.trackName;
+        var trackPath = this.state.trackPath;
+        var trackDuration = this.state.trackDuration;
+        var musicSource = $('input[name=musicSource]:checked', '#uploadForm').val();
+        if (musicSource === 'stock') {
+            trackPath = $(this.refs.trackSelect.getDOMNode()).val();
+            this.props.stockTracks.forEach(function (track) {
+                if (track.trackPath === trackPath) {
+                    trackName = track.trackName;
+                    trackDuration = track.trackDuration;
+                }
+            });
+        }
+        if (musicSource === 'upload' && this.state.musicSource === 'stock') {
+            trackName = 'Track name';
+            trackDuration = undefined;
+            trackPath = undefined;
+        }
+        var newState = {
+            trackName: trackName,
+            trackPath: trackPath,
+            musicSource: musicSource,
+            trackDuration: trackDuration
+        }
+        this.setState(newState);
+        this.props.onChange(newState);
+    },
     componentDidMount: function() {
-        $(this.refs.trackSelect.getDOMNode()).chosen();
+        $(this.refs.trackSelect.getDOMNode()).chosen().change(this.handleChange);
     }
 });
 
@@ -131,10 +168,10 @@ var Retarget = React.createClass({
         <div className="col-lg-6">
             <div className="well">
                 <p className="lead">Select music</p>
-                <RetargetUploadForm onChange={this.dirtyTrack} stockTracks={this.state.stockTracks} />
+                <RetargetUploadForm musicSource={this.state.musicSource} trackName={this.state.trackName} onChange={this.updateSettings} stockTracks={this.state.stockTracks} />
                 <p className="lead">Music details</p>
-                <p><strong>Track name:</strong> <input type="text" value={this.state.trackName} onChange={this.updateTrackName} /></p>
-                <p><strong>Track duration:</strong> {this.state.trackDuration}</p>
+                <p><strong>Track name:</strong> {this.state.trackName}</p>
+                <p><strong>Track duration:</strong> {this.niceDuration(this.state.trackDuration)}</p>
             </div>
             <RetargetTime onChange={this.updateTime} seconds={90} />
             <RetargetSettings onChange={this.updateSettings} startAtStart={true} endAtEnd={true} />
@@ -173,10 +210,22 @@ var Retarget = React.createClass({
             startAtStart: true,
             endAtEnd: true,
             uploadedTrack: false,
-            trackPath: null,
-            fileinputFilename: null,
-            stockTracks: stockTracks
+            trackPath: undefined,
+            fileinputFilename: undefined,
+            stockTracks: stockTracks,
+            musicSource: 'stock'
         };
+    },
+    niceDuration: function(dur) {
+        if (dur !== undefined) {
+            var seconds = parseInt(dur % 60, 10);
+            if (seconds < 10) {
+                seconds = "0" + seconds;
+            }
+            var minutes = parseInt(dur / 60, 10);
+            return +minutes + ':' + seconds;
+        }
+        return '';
     },
     updateTrackName: function(event) {
         this.setState({trackName: event.target.value});
@@ -253,6 +302,7 @@ var Retarget = React.createClass({
         }
         var url = "/retarget-service/retarget/" +
             this.state.trackPath + '/' + 
+            this.state.musicSource + '/' +
             this.state.seconds + '/' +
             start + '/' + end;
 
@@ -303,25 +353,29 @@ var Retarget = React.createClass({
             top: '50%', // Top position relative to parent
             left: '50%' // Left position relative to parent
         };
-        this.setState({spinner: new Spinner(opts).spin($('body')[0])});
+
+        var spinner = new Spinner(opts).spin($('body')[0]);
+
+        this.setState({spinner: spinner});
 
         var _this = this;
 
         var fifn = $(".fileinput-filename").text();
         var upload = false;
         if (fifn !== this.state.fileinputFilename) {
-            console.log("Must upload new file");
             this.setState({
                 fileinputFilename: fifn,
                 uploadedTrack: false,
-                trackPath: null
+                trackPath: undefined
             });
-            console.log(this.state);
             var upload = true;
         }
 
-        if (upload) {
+        if (upload && this.state.musicSource === 'upload') {
             $("#uploadForm").submit();
+        } else if (this.state.musicSource === 'stock' && this.state.trackPath === undefined) {
+            this.setState({status: "You must select a track to retarget"});
+            spinner.stop();
         } else {
             this._retargetFn();
         }
