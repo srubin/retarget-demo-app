@@ -371,7 +371,7 @@ module.exports = function (grunt) {
                     cwd: 'bower_components/chosen/public',
                     expand: true,
                     dot: true,
-                    src: ['*.img'],
+                    src: ['*.png'],
                     dest: '<% config.app %>/styles'
                 }]
             },
