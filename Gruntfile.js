@@ -372,7 +372,7 @@ module.exports = function (grunt) {
                     expand: true,
                     dot: true,
                     src: ['*.png'],
-                    dest: '<% config.app %>/styles'
+                    dest: '<%= config.app %>/styles'
                 }]
             },
             styles: {
