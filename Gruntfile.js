@@ -368,7 +368,7 @@ module.exports = function (grunt) {
                     src: ['fonts/*.*'],
                     dest: '<%= config.dist %>'
                 }, {
-                    cwd: 'bower_components/chosen',
+                    cwd: 'bower_components/chosen/public',
                     expand: true,
                     dot: true,
                     src: ['*.img'],
