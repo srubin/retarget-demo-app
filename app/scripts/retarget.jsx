@@ -169,6 +169,19 @@ var Retarget = React.createClass({
                 </li>;
         });
 
+        var player = '';
+        if (this.state.trackPath !== undefined) {
+            if (this.state.musicSource === 'stock') {
+                player = <ul className="playlist">
+                    <a href={"static/stock/" + this.state.trackPath}>Original track</a>
+                    </ul>;
+            } else if (this.state.uploadedTrack) {
+                player = <ul className="playlist">
+                    <a href={"static/uploads/" + this.state.trackPath}>Original track</a>
+                    </ul>;   
+            }
+        }
+
         return <div>
         <div className="col-lg-6">
             <div className="well">
@@ -179,6 +192,7 @@ var Retarget = React.createClass({
                 <p className="lead">Music details</p>
                 <p><strong>Track name:</strong> {this.state.trackName}</p>
                 <p><strong>Track duration:</strong> {this.niceDuration(this.state.trackDuration)}</p>
+                {player}
             </div>
             <RetargetTime onChange={this.updateTime} seconds={90} />
             <RetargetSettings onChange={this.updateSettings} startAtStart={true} endAtEnd={true} />

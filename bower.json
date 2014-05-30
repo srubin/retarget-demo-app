@@ -6,9 +6,7 @@
     "jquery": "~1.11.0",
     "react": "~0.10.0",
     "soundmanager": "*",
-    "spin.js": "~2.0.0"
-  },
-  "devDependencies": {
+    "spin.js": "~2.0.0",
     "chosen": "~1.1.0"
   }
 }
