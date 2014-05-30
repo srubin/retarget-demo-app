@@ -384,19 +384,17 @@ var Retarget = React.createClass({
 
         var _this = this;
 
-        var fifn = $(".fileinput-filename").text();
-        var upload = false;
-        if (fifn !== this.state.fileinputFilename) {
-            this.setState({
-                fileinputFilename: fifn,
-                uploadedTrack: false,
-                trackPath: undefined
-            });
-            var upload = true;
-        }
-
-        if (upload && this.state.musicSource === 'upload') {
-            $("#uploadForm").submit();
+        if (this.state.musicSource === 'upload') {
+            var fifn = $(".fileinput-filename").text();
+            var upload = false;
+            if (fifn !== this.state.fileinputFilename) {
+                this.setState({
+                    fileinputFilename: fifn,
+                    uploadedTrack: false,
+                    trackPath: undefined
+                });
+                $("#uploadForm").submit();
+            }
         } else if (this.state.musicSource === 'stock' && this.state.trackPath === undefined) {
             this.setState({status: "You must select a track to retarget"});
             spinner.stop();
