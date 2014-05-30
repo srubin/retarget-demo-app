@@ -179,7 +179,7 @@ var Retarget = React.createClass({
                     </ul>;
             } else if (this.state.uploadedTrack) {
                 player = <ul className="playlist">
-                    <a href={"/retarget-service/static/uploads/" + mp3Path}>Original track</a>
+                    <li><a href={"/retarget-service/static/uploads/" + mp3Path}>Original track</a></li>
                     </ul>;   
             }
         }
