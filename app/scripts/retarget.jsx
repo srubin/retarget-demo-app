@@ -183,6 +183,7 @@ var Retarget = React.createClass({
                     </ul>;   
             }
         }
+        console.log("rendering retarget", "trackpath", this.state.trackPath, "source", this.state.musicSource);
 
         return <div>
         <div className="col-lg-6">
