@@ -175,7 +175,7 @@ var Retarget = React.createClass({
             var mp3Path = this.state.trackPath.substring(0, pathLen - 3) + 'mp3';
             if (this.state.musicSource === 'stock') {
                 player = <ul className="playlist">
-                    <a href={"/retarget-service/static/stock/" + mp3Path}>Original track</a>
+                    <li><a href={"/retarget-service/static/stock/" + mp3Path}>Original track</a></li>
                     </ul>;
             } else if (this.state.uploadedTrack) {
                 player = <ul className="playlist">
